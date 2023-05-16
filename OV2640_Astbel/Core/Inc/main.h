@@ -31,7 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+extern DMA_HandleTypeDef hdma_dcmi;
+extern DCMI_HandleTypeDef hdcmi;
+extern I2C_HandleTypeDef hi2c2;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -53,7 +55,19 @@ extern "C" {
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
-
+/**DCMI GPIO Configuration
+    PA4     ------> DCMI_HSYNC
+    PA6     ------> DCMI_PIXCLK
+    PC6     ------> DCMI_D0
+    PC7     ------> DCMI_D1
+    PC8     ------> DCMI_D2
+    PC9     ------> DCMI_D3
+    PC11     ------> DCMI_D4
+    PB6     ------> DCMI_D5
+    PB7     ------> DCMI_VSYNC
+    PB8     ------> DCMI_D6
+    PB9     ------> DCMI_D7
+    */
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

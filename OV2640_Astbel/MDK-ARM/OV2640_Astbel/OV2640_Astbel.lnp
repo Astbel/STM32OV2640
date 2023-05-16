@@ -4,6 +4,7 @@
 "ov2640_astbel\freertos.o"
 "ov2640_astbel\stm32f4xx_it.o"
 "ov2640_astbel\stm32f4xx_hal_msp.o"
+"ov2640_astbel\ov2640.o"
 "ov2640_astbel\stm32f4xx_hal_dcmi.o"
 "ov2640_astbel\stm32f4xx_hal_dcmi_ex.o"
 "ov2640_astbel\stm32f4xx_hal_rcc.o"
