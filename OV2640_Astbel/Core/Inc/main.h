@@ -36,22 +36,13 @@ extern DCMI_HandleTypeDef hdcmi;
 extern I2C_HandleTypeDef hi2c2;
 /* USER CODE END Includes */
 
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
+/**OV2640 GPIO PIN**/
+#define OV2640_PWDN_Pin GPIO_PIN_0
+#define OV2640_PWDN_GPIO_Port GPIOA
+#define OV2640_RESET_Pin GPIO_PIN_1
+#define OV2640_RESET_GPIO_Port GPIOA
 
-/* USER CODE END ET */
 
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
-
-/* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
