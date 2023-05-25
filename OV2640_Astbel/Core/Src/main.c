@@ -29,7 +29,37 @@
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
+#define RES1280x960
 
+#ifdef RES160X120
+enum imageResolution imgRes=RES_160X120;
+uint8_t frameBuffer[RES_160X120] = { 0 };
+#endif
+
+#ifdef RES320X240
+enum imageResolution imgRes=RES_320X240;
+uint8_t frameBuffer[RES_320X240] = { 0 };
+#endif
+
+#ifdef RES640X480
+enum imageResolution imgRes=RES_640X480;
+uint8_t frameBuffer[RES_640X480] = { 0 };
+#endif
+
+#ifdef RES800x600
+enum imageResolution imgRes=RES_800x600;
+uint8_t frameBuffer[RES_800x600] = { 0 };
+#endif
+
+#ifdef RES1024x768
+enum imageResolution imgRes=RES_1024x768;
+uint8_t frameBuffer[RES_1024x768] = { 0 };
+#endif
+
+#ifdef RES1280x960
+enum imageResolution imgRes = RES_1280x960;
+uint8_t frameBuffer[RES_1280x960] = { 0 };
+#endif
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 /* USER CODE END PD */
@@ -44,15 +74,15 @@ DCMI_HandleTypeDef hdcmi;
 DMA_HandleTypeDef hdma_dcmi;
 GPIO_InitTypeDef  GPIO_InitStruct;
 I2C_HandleTypeDef hi2c2;
-
 UART_HandleTypeDef huart3;
 DMA_HandleTypeDef hdma_usart3_tx;
-
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
-
+uint8_t mutex = 0;
+uint16_t bufferPointer = 0;
+uint8_t headerFound = 0;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -62,13 +92,24 @@ static void MX_I2C2_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void const * argument);
 
-/* USER CODE BEGIN PFP */
 
-/* USER CODE END PFP */
 
-/* Private user code ---------------------------------------------------------*/
-/* USER CODE BEGIN 0 */
+void vprint(const char *fmt, va_list argp) {
+	char string[200];
+	if (0 < vsprintf(string, fmt, argp)) // build string
+			{
+		HAL_UART_Transmit(&huart3, (uint8_t*) string, strlen(string), 0xffffff); // send message via UART
+	}
+}
 
+void my_printf(const char *fmt, ...) // custom printf() function
+{
+	va_list argp;
+	va_start(argp, fmt);
+	vprint(fmt, argp);
+	va_end(argp);
+}
+/* USER CODE END 0 */
 /* USER CODE END 0 */
 
 /**
@@ -103,32 +144,13 @@ int main(void)
   MX_DCMI_Init();
   MX_I2C2_Init();
   MX_USART3_UART_Init();
-  /* USER CODE BEGIN 2 */
 
-  /* USER CODE END 2 */
+  OV2640_Init(&hi2c2, &hdcmi);
+	HAL_Delay(10);
+	OV2640_ResolutionOptions(imgRes);
+	HAL_Delay(10);
 
-  /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
-  /* USER CODE END RTOS_MUTEX */
-
-  /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
-  /* USER CODE END RTOS_SEMAPHORES */
   RTOS_Initliaze();
-  /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
-  /* USER CODE END RTOS_TIMERS */
-
-  /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
-  /* USER CODE END RTOS_QUEUES */
-
-  /* Create the thread(s) */
-  /* definition and creation of defaultTask */
- 
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
   osKernelStart();
@@ -138,9 +160,48 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
+  //   HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+  //   if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)) {
+  //     HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+	// 		if (mutex == 1) {
+	// 			memset(frameBuffer, 0, sizeof frameBuffer);
+	// 			OV2640_CaptureSnapshot((uint32_t) frameBuffer, imgRes);
 
-    /* USER CODE BEGIN 3 */
+	// 			while (1) {
+	// 				if (headerFound == 0 && frameBuffer[bufferPointer] == 0xFF
+	// 						&& frameBuffer[bufferPointer + 1] == 0xD8) {
+	// 					headerFound = 1;
+	// 				#ifdef DEBUG
+	// 					my_printf("Found header of JPEG file \r\n");
+	// 				#endif
+	// 				}
+	// 				if (headerFound == 1 && frameBuffer[bufferPointer] == 0xFF
+	// 						&& frameBuffer[bufferPointer + 1] == 0xD9) {
+	// 					bufferPointer = bufferPointer + 2;
+	// 				#ifdef DEBUG
+	// 					my_printf("Found EOF of JPEG file \r\n");
+	// 					#endif
+	// 					headerFound = 0;
+	// 					break;
+	// 				}
+
+	// 				if (bufferPointer >= 65535) {
+	// 					break;
+	// 				}
+	// 				bufferPointer++;
+	// 			}
+	// 				#ifdef DEBUG
+	// 					my_printf("Image size: %d bytes \r\n",bufferPointer);
+	// 				#endif
+
+	// 			HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
+	// 			bufferPointer = 0;
+	// 			mutex = 0;
+	// 		}
+	// 	} else {
+  //      HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+	// 		mutex = 1;
+	// 	}
   }
   /* USER CODE END 3 */
 }
@@ -337,19 +398,25 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   /*Configure GPIO pin Output Level */
   /*Configure GPIO pin : PA5 */
-  GPIO_InitStruct.Pin = GPIO_PIN_5;
+  GPIO_InitStruct.Pin = LED_PIN;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(LED_PIN_GPIO_Port, &GPIO_InitStruct);
 
-  /**OV2640 PWN RST**/
-  GPIO_InitStruct.Pin = OV2640_PWDN_Pin|OV2640_RESET_Pin;
+  /**OV2640 PWDN&RST**/
+  GPIO_InitStruct.Pin = PWDN_PIN|RST_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(PWDN_RST_PIN_GPIO_Port, &GPIO_InitStruct);
 
+  /*Cammera Pin */
+  GPIO_InitStruct.Pin = USER_Btn_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 }
 
 /* USER CODE BEGIN 4 */

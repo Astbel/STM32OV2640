@@ -98,12 +98,56 @@ void StartTask02(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-  
-		osDelay(100);
-	}
+    // HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+    if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
+    {
+      //  HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+			if (mutex == 1) {
+				memset(frameBuffer, 0, sizeof frameBuffer);
+				OV2640_CaptureSnapshot((uint32_t) frameBuffer, imgRes);
+
+				while (1) {
+					if (headerFound == 0 && frameBuffer[bufferPointer] == 0xFF
+							&& frameBuffer[bufferPointer + 1] == 0xD8) {
+						headerFound = 1;
+					#ifdef DEBUG
+						my_printf("Found header of JPEG file \r\n");
+					#endif
+					}
+					if (headerFound == 1 && frameBuffer[bufferPointer] == 0xFF
+							&& frameBuffer[bufferPointer + 1] == 0xD9) {
+						bufferPointer = bufferPointer + 2;
+					#ifdef DEBUG
+						my_printf("Found EOF of JPEG file \r\n");
+						#endif
+						headerFound = 0;
+						break;
+					}
+
+					if (bufferPointer >= 65535) {
+						break;
+					}
+					bufferPointer++;
+				}
+					#ifdef DEBUG
+						my_printf("Image size: %d bytes \r\n",bufferPointer);
+					#endif
+
+				HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
+				bufferPointer = 0;
+				mutex = 0;
+			}
+		} 
+    else 
+    {
+      //  HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+			 mutex = 1;
+		}
+  }
+	osDelay(100);
+}
     
   /* USER CODE END StartTask02 */
-}
 
 /* USER CODE END GET_IDLE_TASK_MEMORY */
 void StartTask03(void const * argument)
