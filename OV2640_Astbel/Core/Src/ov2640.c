@@ -19,7 +19,12 @@
 /* Absolute value */
 #define ABS(x)   ((x) > 0 ? (x) : -(x))
 
-/*I2C 讀取資料*/
+/***********************************************************************************
+ * 函數名:   uint8_t I2C_Read(uint8_t reg,uint8_t address)  
+ * 函數功能: 讀取Device 回傳值
+ * 輸入參數:  reg 地址,address 地址
+ * 輸出:      返回數據
+***********************************************************************************/
 uint8_t I2C_Read(uint8_t reg,uint8_t address)
 {
   uint8_t value = 0;
@@ -27,7 +32,12 @@ uint8_t I2C_Read(uint8_t reg,uint8_t address)
   HAL_I2C_Master_Receive(&hi2c2, address, &value, 1, HAL_MAX_DELAY); // 读取寄存器值
   return value;
 }
-
+/***********************************************************************************
+ * 函數名:    void ov2640_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t* data, uint16_t count)  
+ * 函數功能:  寫入多組數據至device
+ * 輸入參數:  address 地址,reg 佔存, data資料,count 計數
+ * 輸出:      無回傳型
+***********************************************************************************/
 void ov2640_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t* data, uint16_t count) 
 {
     uint8_t dt[256];
@@ -37,14 +47,19 @@ void ov2640_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t* data, uint16_t
     dt[i+1] = data[i];
     HAL_I2C_Master_Transmit(&hi2c2, address, dt, count+1, 10);
 }
-
+/***********************************************************************************
+ * 函數名:    void ov2640_I2C_Write(uint8_t address, uint8_t reg, uint8_t data)  
+ * 函數功能:  I2C 寫入device 功能
+ * 輸入參數:  address device 地址,reg device 佔存位置,data要寫入的資料
+ * 輸出:      無回傳型
+***********************************************************************************/
 
 void ov2640_I2C_Write(uint8_t address, uint8_t reg, uint8_t data) 
 {
 	uint8_t dt[2];
 	dt[0] = reg;
 	dt[1] = data;
-	HAL_I2C_Master_Transmit(&hi2c2, address, dt, 2, 10);
+	HAL_I2C_Master_Transmit(&hi2c2, address, dt, 2, 100);
 }
 /***********************************************************************************
  * 函數名:    OV2640_RD_REG()  
@@ -52,19 +67,38 @@ void ov2640_I2C_Write(uint8_t address, uint8_t reg, uint8_t data)
  * 輸入參數:  reg 地址
  * 輸出:      返回數據
 ***********************************************************************************/
-unsigned char OV2640_RD_REG()
+unsigned char OV2640_RD_REG(unsigned char reg)
 {
-       
+    unsigned char val=0;
+    /*SCCB開始*/
+    /*連動ID*/
+    HAL_Delay(100);
+    /*確定要讀取的佔存*/
+    HAL_Delay(100);
+    /*SCCB STOP*/
+    HAL_Delay(100);
+    //開始讀取REG
+    /*SCCB START*/
+    /*SCCB 發送命令*/
+    HAL_Delay(100);
+    /*讀取數據*/
+    /*ACK*/
+    /*STOP*/
+    return val;
 }
 
-
-
+/***********************************************************************************
+ * 函數名:    uint8_t OV2640_Init(void) 
+ * 函數功能:  ov2640初始化參數
+ * 輸入參數:  無輸入參數
+ * 輸出:      0x00回傳則代表初始化成功如果途中回傳1或是2代表device id錯誤
+***********************************************************************************/
 uint8_t OV2640_Init(void)
 {
     //硬體復位
     HAL_GPIO_WritePin(OV2640_PWDN_GPIO_Port, OV2640_PWDN_Pin, GPIO_PIN_RESET);
     HAL_GPIO_WritePin(OV2640_RESET_GPIO_Port, OV2640_RESET_Pin, GPIO_PIN_RESET);
-    HAL_Delay(10);
+    HAL_Delay(100);
     HAL_GPIO_WritePin(OV2640_RESET_GPIO_Port, OV2640_RESET_Pin, GPIO_PIN_SET);
     HAL_Delay(10);
 

@@ -108,8 +108,9 @@ extern void ov2640_I2C_Write(uint8_t address, uint8_t reg, uint8_t data) ;
 
 
 
-
-
-
-
+/*方法宣告*/
+uint8_t I2C_Read(uint8_t reg,uint8_t address);
+void ov2640_I2C_WriteMulti(uint8_t address, uint8_t reg, uint8_t* data, uint16_t count);
+void ov2640_I2C_Write(uint8_t address, uint8_t reg, uint8_t data) ;
+uint8_t OV2640_Init(void);
 #endif
