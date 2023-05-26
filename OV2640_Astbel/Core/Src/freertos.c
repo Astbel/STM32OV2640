@@ -69,12 +69,12 @@ void RTOS_Initliaze(void)
   myTask01Handle = osThreadCreate(osThread(myTask01), NULL);
 
   /* definition and creation of myTask02 */
-  osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 128);
-  myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
+  // osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 128);
+  // myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
 
-  /* definition and creation of myTask03 */
-  osThreadDef(myTask03, StartTask03, osPriorityIdle, 0, 128);
-  myTask03Handle = osThreadCreate(osThread(myTask03), NULL);
+  // /* definition and creation of myTask03 */
+  // osThreadDef(myTask03, StartTask03, osPriorityIdle, 0, 128);
+  // myTask03Handle = osThreadCreate(osThread(myTask03), NULL);
 }
 /* USER CODE END Variables */
 
@@ -86,7 +86,19 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+    // HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+    
+  if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
+  {
+     HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+      mutex=0;
+  }
+  else
+  {
+    HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+      mutex=1;
+  }
+     
     osDelay(100);
   }
   /* USER CODE END 5 */

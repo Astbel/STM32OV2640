@@ -140,15 +140,15 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_DCMI_Init();
-  MX_I2C2_Init();
-  MX_USART3_UART_Init();
+  // MX_DMA_Init();
+  // MX_DCMI_Init();
+  // MX_I2C2_Init();
+  // MX_USART3_UART_Init();
 
-  OV2640_Init(&hi2c2, &hdcmi);
-	HAL_Delay(10);
-	OV2640_ResolutionOptions(imgRes);
-	HAL_Delay(10);
+  // OV2640_Init(&hi2c2, &hdcmi);
+	// HAL_Delay(10);
+	// OV2640_ResolutionOptions(imgRes);
+	// HAL_Delay(10);
 
   RTOS_Initliaze();
 
@@ -404,18 +404,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LED_PIN_GPIO_Port, &GPIO_InitStruct);
 
-  /**OV2640 PWDN&RST**/
-  GPIO_InitStruct.Pin = PWDN_PIN|RST_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  /**OV2640 RST**/
+  GPIO_InitStruct.Pin = RST_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(PWDN_RST_PIN_GPIO_Port, &GPIO_InitStruct);
+  /*Camera PWDN PIN*/
+  GPIO_InitStruct.Pin = PWDN_PIN;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(PWDN_RST_PIN_GPIO_Port, &GPIO_InitStruct);
 
   /*Cammera Pin */
   GPIO_InitStruct.Pin = USER_Btn_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Mode =  GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 }
 
