@@ -65,12 +65,12 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
 /* USER CODE BEGIN Variables */
 void RTOS_Initliaze(void)
 {
-  osThreadDef(myTask01, StartDefaultTask, osPriorityNormal, 0, 128);
-  myTask01Handle = osThreadCreate(osThread(myTask01), NULL);
+  // osThreadDef(myTask01, StartDefaultTask, osPriorityNormal, 0, 128);
+  // myTask01Handle = osThreadCreate(osThread(myTask01), NULL);
 
   /* definition and creation of myTask02 */
-  // osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 128);
-  // myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
+  osThreadDef(myTask02, StartTask02, osPriorityIdle, 0, 128);
+  myTask02Handle = osThreadCreate(osThread(myTask02), NULL);
 
   // /* definition and creation of myTask03 */
   // osThreadDef(myTask03, StartTask03, osPriorityIdle, 0, 128);
@@ -88,16 +88,16 @@ void StartDefaultTask(void const * argument)
   {
     // HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
     
-  if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
-  {
-     HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
-      mutex=0;
-  }
-  else
-  {
-    HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
-      mutex=1;
-  }
+  // if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
+  // {
+  //    HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+  //     mutex=0;
+  // }
+  // else
+  // {
+  //   HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+  //     mutex=1;
+  // }
      
     osDelay(100);
   }
@@ -111,9 +111,9 @@ void StartTask02(void const * argument)
   for(;;)
   {
     // HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
-    if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin))
+    if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)==0)
     {
-      //  HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+       HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
 			if (mutex == 1) {
 				memset(frameBuffer, 0, sizeof frameBuffer);
 				OV2640_CaptureSnapshot((uint32_t) frameBuffer, imgRes);
@@ -145,14 +145,14 @@ void StartTask02(void const * argument)
 						my_printf("Image size: %d bytes \r\n",bufferPointer);
 					#endif
 
-				HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
+				// HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
 				bufferPointer = 0;
 				mutex = 0;
 			}
 		} 
     else 
     {
-      //  HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+       HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
 			 mutex = 1;
 		}
   }

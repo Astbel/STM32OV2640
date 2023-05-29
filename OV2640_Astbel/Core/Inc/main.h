@@ -46,14 +46,45 @@ extern uint8_t mutex ;
 extern uint16_t bufferPointer;
 extern uint8_t headerFound;
 /* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
+//#define RES160X120
+#define RES320X240
+//#define RES640X480
+//#define RES800x600
+//#define RES1024x768
+// #define RES1280x960
 extern enum imageResolution imgRes;
-extern uint8_t frameBuffer[RES_1280x960];
-/* USER CODE END ET */
+#ifdef RES160X120
+// extern enum imageResolution imgRes=RES_160X120;
+extern uint8_t frameBuffer[RES_160X120];
+#endif
 
+#ifdef RES320X240
+// extern enum imageResolution imgRes=RES_320X240;
+extern uint8_t frameBuffer[RES_320X240];
+#endif
+
+#ifdef RES640X480
+// extern enum imageResolution imgRes=RES_640X480;
+extern uint8_t frameBuffer[RES_640X480];
+#endif
+
+#ifdef RES800x600
+// extern enum imageResolution imgRes=RES_800x600;
+extern uint8_t frameBuffer[RES_800x600];
+#endif
+
+#ifdef RES1024x768
+// extern enum imageResolution imgRes=RES_1024x768;
+extern uint8_t frameBuffer[RES_1024x768];
+#endif
+
+#ifdef RES1280x960
+// extern enum imageResolution imgRes = RES_1280x960;
+extern uint8_t frameBuffer[RES_1280x960];
+#endif
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
-
+extern uint8_t ov2640_init_done_flag;
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/

@@ -29,7 +29,12 @@
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
-#define RES1280x960
+//#define RES160X120
+#define RES320X240
+//#define RES640X480
+//#define RES800x600
+//#define RES1024x768
+// #define RES1280x960
 
 #ifdef RES160X120
 enum imageResolution imgRes=RES_160X120;
@@ -91,7 +96,7 @@ static void MX_DCMI_Init(void);
 static void MX_I2C2_Init(void);
 static void MX_USART3_UART_Init(void);
 void StartDefaultTask(void const * argument);
-
+void Camera_Capture_Image_Method(void);
 
 
 void vprint(const char *fmt, va_list argp) {
@@ -130,7 +135,8 @@ int main(void)
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
-
+  mutex=0;
+  ov2640_init_done_flag=0;
   /* Configure the system clock */
   SystemClock_Config();
 
@@ -140,70 +146,81 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  // MX_DMA_Init();
-  // MX_DCMI_Init();
-  // MX_I2C2_Init();
-  // MX_USART3_UART_Init();
+  MX_DMA_Init();
+  MX_DCMI_Init();
+  MX_I2C2_Init();
+  MX_USART3_UART_Init();
 
-  // OV2640_Init(&hi2c2, &hdcmi);
-	// HAL_Delay(10);
-	// OV2640_ResolutionOptions(imgRes);
-	// HAL_Delay(10);
+  OV2640_Init(&hi2c2, &hdcmi);
+	HAL_Delay(10);
+	OV2640_ResolutionOptions(imgRes);
+	HAL_Delay(10);
 
-  RTOS_Initliaze();
+  // RTOS_Initliaze();
 
   /* Start scheduler */
-  osKernelStart();
+  // osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-  //   HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
-  //   if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)) {
-  //     HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
-	// 		if (mutex == 1) {
-	// 			memset(frameBuffer, 0, sizeof frameBuffer);
-	// 			OV2640_CaptureSnapshot((uint32_t) frameBuffer, imgRes);
-
-	// 			while (1) {
-	// 				if (headerFound == 0 && frameBuffer[bufferPointer] == 0xFF
-	// 						&& frameBuffer[bufferPointer + 1] == 0xD8) {
-	// 					headerFound = 1;
-	// 				#ifdef DEBUG
-	// 					my_printf("Found header of JPEG file \r\n");
-	// 				#endif
-	// 				}
-	// 				if (headerFound == 1 && frameBuffer[bufferPointer] == 0xFF
-	// 						&& frameBuffer[bufferPointer + 1] == 0xD9) {
-	// 					bufferPointer = bufferPointer + 2;
-	// 				#ifdef DEBUG
-	// 					my_printf("Found EOF of JPEG file \r\n");
-	// 					#endif
-	// 					headerFound = 0;
-	// 					break;
-	// 				}
-
-	// 				if (bufferPointer >= 65535) {
-	// 					break;
-	// 				}
-	// 				bufferPointer++;
-	// 			}
-	// 				#ifdef DEBUG
-	// 					my_printf("Image size: %d bytes \r\n",bufferPointer);
-	// 				#endif
-
-	// 			HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
-	// 			bufferPointer = 0;
-	// 			mutex = 0;
-	// 		}
-	// 	} else {
-  //      HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
-	// 		mutex = 1;
-	// 	}
+    Camera_Capture_Image_Method();
   }
   /* USER CODE END 3 */
+}
+void Camera_Capture_Image_Method(void)
+{
+   if (HAL_GPIO_ReadPin(USER_Btn_GPIO_Port, USER_Btn_Pin)==0) 
+    {
+      HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_SET);
+			if (mutex == 1) 
+      {
+				memset(frameBuffer, 0, sizeof frameBuffer);
+				OV2640_CaptureSnapshot((uint32_t) frameBuffer, imgRes);
+
+				while (1) 
+        {
+					if (headerFound == 0 && frameBuffer[bufferPointer] == 0xFF
+							&& frameBuffer[bufferPointer + 1] == 0xD8) 
+          {
+						  headerFound = 1;
+					  #ifdef DEBUG
+						  my_printf("Found header of JPEG file \r\n");
+					  #endif
+					}
+					  if (headerFound == 1 && frameBuffer[bufferPointer] == 0xFF
+							  && frameBuffer[bufferPointer + 1] == 0xD9) 
+            {
+						  bufferPointer = bufferPointer + 2;
+					    #ifdef DEBUG
+						    my_printf("Found EOF of JPEG file \r\n");
+						  #endif
+						  headerFound = 0;
+						  break;
+					  }
+					  if (bufferPointer >= 65535)
+            {
+						  break;
+					  }
+					  bufferPointer++;
+				}
+					#ifdef DEBUG
+						my_printf("Image size: %d bytes \r\n",bufferPointer);
+					#endif
+
+				HAL_UART_Transmit_DMA(&huart3, frameBuffer, bufferPointer); //Use of DMA may be necessary for larger data streams.
+				bufferPointer = 0;
+				mutex = 0;
+			}
+		} 
+    else 
+    {
+      // my_printf("Waitting User Press BTN \r\n");
+      HAL_GPIO_WritePin(LED_PIN_GPIO_Port,LED_PIN,GPIO_PIN_RESET);
+			mutex = 1;
+		}
 }
 
 /**

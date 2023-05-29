@@ -21,7 +21,7 @@
 I2C_HandleTypeDef *phi2c;
 DCMI_HandleTypeDef *phdcmi;
 UART_HandleTypeDef *phuart;
-
+uint8_t ov2640_init_done_flag;
 const unsigned char OV2640_JPEG_INIT[][2] = { { 0xff, 0x00 }, { 0x2c, 0xff }, {
 		0x2e, 0xdf }, { 0xff, 0x01 }, { 0x3c, 0x32 }, { 0x11, 0x00 }, { 0x09,
 		0x02 }, { 0x04, 0x28 }, { 0x13, 0xe5 }, { 0x14, 0x48 }, { 0x2c, 0x0c },
@@ -285,6 +285,7 @@ void OV2640_Init(I2C_HandleTypeDef *p_hi2c, DCMI_HandleTypeDef *p_hdcmi) {
 	SCCB_Read(0x0a, &pid);  // pid value is 0x26
 	SCCB_Read(0x0b, &ver);  // ver value is 0x42
 	my_printf("PID: 0x%x, VER: 0x%x\n", pid, ver);
+	my_printf("STM32 connect to OV2640 \r\n");
 #endif
 
 	// Stop DCMI clear buffer
@@ -574,8 +575,10 @@ short SCCB_Write(uint8_t reg_addr, uint8_t data) {
 			2, 100);
 	if (connectionStatus == HAL_OK) {
 		opertionStatus = 1;
+		ov2640_init_done_flag=1;
 	} else {
 		opertionStatus = 0;
+		ov2640_init_done_flag=0;
 	}
 	__enable_irq();
 	return opertionStatus;
