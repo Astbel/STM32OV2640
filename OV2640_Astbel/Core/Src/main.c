@@ -29,11 +29,11 @@
 /* USER CODE BEGIN PTD */
 
 /* USER CODE END PTD */
-//#define RES160X120
+// #define RES160X120
 #define RES320X240
 //#define RES640X480
 //#define RES800x600
-//#define RES1024x768
+// #define RES1024x768
 // #define RES1280x960
 
 #ifdef RES160X120
@@ -85,9 +85,11 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
+uint8_t camera_image_flag=0;
 uint8_t mutex = 0;
 uint16_t bufferPointer = 0;
 uint8_t headerFound = 0;
+uint8_t sccb_data_read_fail_cnt;
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
@@ -137,6 +139,7 @@ int main(void)
   /* USER CODE END Init */
   mutex=0;
   ov2640_init_done_flag=0;
+  sccb_data_read_fail_cnt=0;
   /* Configure the system clock */
   SystemClock_Config();
 
@@ -155,6 +158,11 @@ int main(void)
 	HAL_Delay(10);
 	OV2640_ResolutionOptions(imgRes);
 	HAL_Delay(10);
+  if (sccb_data_read_fail_cnt>1)
+	{
+		my_printf("SCCB write fail numbers: %x\r\n", sccb_data_read_fail_cnt);
+		//  my_printf("SCCB fail inital image config \r\n");
+	}
 
   // RTOS_Initliaze();
 
@@ -186,6 +194,7 @@ void Camera_Capture_Image_Method(void)
 							&& frameBuffer[bufferPointer + 1] == 0xD8) 
           {
 						  headerFound = 1;
+              camera_image_flag=1;
 					  #ifdef DEBUG
 						  my_printf("Found header of JPEG file \r\n");
 					  #endif
@@ -197,11 +206,14 @@ void Camera_Capture_Image_Method(void)
 					    #ifdef DEBUG
 						    my_printf("Found EOF of JPEG file \r\n");
 						  #endif
+              camera_image_flag=2;
 						  headerFound = 0;
 						  break;
 					  }
 					  if (bufferPointer >= 65535)
             {
+              camera_image_flag=3;
+              my_printf("Fail capture image \r\n");
 						  break;
 					  }
 					  bufferPointer++;
@@ -440,6 +452,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : DCMI_XCLX_Pin */
+  GPIO_InitStruct.Pin = DCMI_XCLX_Pin;
+	GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+	GPIO_InitStruct.Pull = GPIO_NOPULL;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+	GPIO_InitStruct.Alternate = GPIO_AF0_MCO;
+	HAL_GPIO_Init(DCMI_XCLX_GPIO_Port, &GPIO_InitStruct);
+
 }
 
 /* USER CODE BEGIN 4 */
